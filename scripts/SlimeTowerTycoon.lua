@@ -82,7 +82,7 @@ local Misc = Window:MakeTab({
 Misc:AddButton({
 	Name = "Destroy UI",
 	CallBack = function()
-		OrionLib:Destroy()
+		print("teste")
 	end
 })
 

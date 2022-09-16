@@ -5,8 +5,8 @@ local remotesPath = game:GetService("ReplicatedStorage").GTycoonClient.Remotes
 
 local events = {
 	Merge = remotesPath.MergeDroppers,
-    Buy_Dropper = remotesPath.BuyDropper,
-    Buy_Speed = remotesPath.BuySpeed,
+    BuyDropper = remotesPath.BuyDropper,
+    BuyRate = remotesPath.BuySpeed,
     Deposit = remotesPath.DepositDrops
 }
 
@@ -28,8 +28,7 @@ local OrionLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/shle
 local Window = OrionLib:MakeWindow({
 	Name = "Beaast Hub",
 	HidePremium = false,
-	SaveConfig = true,
-	ConfigFolder = "BeaastHubSlimeTower",
+	SaveConfig = false,
 	IntroEnabled = false,
 	IntroText = "Beaast Hub"
 })
@@ -83,7 +82,7 @@ local Buy = Main:AddSection({
 
 Buy:AddDropdown({
 	Name = "Buy Slime Amount",
-	Default = "1",
+	Default = "50",
 	Options = {"1", "5", "25", "50"},
 	Callback = function(amount)
 		settings.autoBuySlime.amount = amount
@@ -177,7 +176,7 @@ function doAutoBuySlime(value)
 	spawn(function()
 		while settings.autoBuySlime.enabled do
 			local amount = value or settings.autoBuySlime.amount
-			events.Buy_Dropper:FireServer(tonumber(amount))
+			events.BuyDropper:FireServer(tonumber(amount))
 			wait(0.1)
 		end
 	end)
@@ -186,7 +185,7 @@ end
 function doAutoBuyRate()
 	spawn(function()
 		while settings.autoBuyRate do
-			events.Buy_Speed:FireServer(1)
+			events.BuyRate:FireServer(1)
 			wait(0.1)
 		end
 	end)

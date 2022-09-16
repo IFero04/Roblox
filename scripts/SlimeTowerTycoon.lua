@@ -2,6 +2,7 @@
 local players = game:GetService("Players")
 local localPlayer = players.LocalPlayer
 local remotesPath = game:GetService("ReplicatedStorage").GTycoonClient.Remotes
+local RunService = game:GetService("RunService")
 
 local events = {
 	Merge = remotesPath.MergeDroppers,
@@ -19,7 +20,9 @@ local settings = {
 		enabled = false,
 		amount = 1
 	},
-	autoBuyRate = false
+	autoBuyRate = false,
+	walkspeed = 16,
+	jumppower = 50
 }
 
 -- // UI SETUP \\ --
@@ -118,14 +121,54 @@ local Misc = Window:MakeTab({
 	PremiumOnly = false
 })
 
-Misc:AddButton({
+local MISC = Misc:AddSection({
+	Name = "Misc Options"
+})
+
+MISC:AddSlider({
+	Name = "Walk Speed",
+	Min = 16,
+	Max = 200,
+	Default = 16,
+	Color = Color3.fromRGB(0, 255, 255),
+	Increment = 1,
+	Callback = function(value)
+		settings.walkspeed = value
+	end
+})
+
+MISC:AddSlider({
+	Name = "Jump Power",
+	Min = 50,
+	Max = 200,
+	Default = 50,
+	Color = Color3.fromRGB(0, 255, 255),
+	Increment = 1,
+	Callback = function(value)
+		settings.jumppower = value
+	end
+})
+
+local UI = Misc:AddSection({
+	Name = "UI Options"
+})
+
+UI:AddBind({
+	Name = "Toggle UI",
+	Default = Enum.KeyCode.RightControl,
+	Hold = false,
+	Callback = function()
+		local UI = game:GetService("CoreGui"):FindFirstChild("Orion")
+		if UI then
+			UI.Enabled = not UI.Enabled
+		end
+	end
+})
+
+UI:AddButton({
 	Name = "Destroy UI",
 	Callback = function()
-      	for i, v in pairs(game.CoreGui:GetDescendants()) do
-		if v.Name == "Orion" then
-			v:Destroy()
-		end
-end
+		OrionLib:Destroy()
   	end
 })
 
@@ -200,5 +243,18 @@ function doAutoMerge()
 	end)
 end
 
+RunService.Stepped:Connect(function()
+	if localPlayer.Character then
+		local Humanoid = localPlayer.Character:FindFirstChild("Humanoid")
+		if Humanoid then
+			Humanoid.WalkSpeed = tonumber(settings.walkspeed)
+			Humanoid.JumpPower = tonumber(settings.jumppower)
+			if Humanoid.UseJumpPower ~= true then
+				Humanoid.UseJumpPower = true
+			end
+		end
+	end
+end)
+
 -- // INITIALIZE THE SCRIPT \\ --
-OrionLib.Init()
+OrionLib:Init()

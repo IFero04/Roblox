@@ -26,7 +26,7 @@ local settings = {
 local OrionLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/shlexware/Orion/main/source')))()
 
 local Window = OrionLib:MakeWindow({
-	Name = "",
+	Name = "Beaast Hub",
 	HidePremium = false,
 	SaveConfig = true,
 	ConfigFolder = "BeaastHubSlimeTower",
@@ -35,7 +35,7 @@ local Window = OrionLib:MakeWindow({
 })
 
 local Main = Window:MakeTab({
-	Name = "Tab 1",
+	Name = "Main",
 	Icon = "rbxassetid://4483345998",
 	PremiumOnly = false
 })

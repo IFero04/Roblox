@@ -3,6 +3,9 @@ local players = game:GetService("Players")
 local localPlayer = players.LocalPlayer
 local remotesPath = game:GetService("ReplicatedStorage").GTycoonClient.Remotes
 local RunService = game:GetService("RunService")
+local ObbyFinish = game:GetService("Workspace").ObbyButton.Button
+local ObbyCheckpoints = game:GetService("Workspace").ObbyCheckpoints
+local returnToPlot = game:GetService("Workspace").ReturnPortals:FindFirstChild("ReturnToPlot").Portal
 
 local events = {
 	Merge = remotesPath.MergeDroppers,
@@ -16,6 +19,7 @@ local settings = {
 	autoCollect = false,
 	autoMerge = false,
 	autoDeposit = false,
+	autoObby = false,
 	autoBuySlime = {
 		enabled = false,
 		amount = 1
@@ -85,8 +89,8 @@ local Buy = Main:AddSection({
 
 Buy:AddDropdown({
 	Name = "Buy Slime Amount",
-	Default = "50",
-	Options = {"1", "5", "25", "50"},
+	Default = "100",
+	Options = {"1", "5", "25", "50", "100"},
 	Callback = function(amount)
 		settings.autoBuySlime.amount = amount
 	end
@@ -149,6 +153,17 @@ MISC:AddSlider({
 	end
 })
 
+MISC:AddToggle({
+	Name = "Enable Auto Obby",
+	Default = false,
+	Callback = function(bool)
+		settings.autoObby = bool
+		if bool then
+			doAutoObby()
+		end
+	end
+})
+
 local UI = Misc:AddSection({
 	Name = "UI Options"
 })
@@ -178,6 +193,13 @@ function TeleportToMe(item)
 	if localPlayer.Character then
 		local hrp = localPlayer.Character.HumanoidRootPart
 		item.CFrame = hrp.CFrame
+	end
+end
+
+function TeleportTo(cframe)
+	if localPlayer.Character then
+		local hrp = localPlayer.Character.HumanoidRootPart
+		hrp.CFrame = cframe
 	end
 end
 
@@ -239,6 +261,28 @@ function doAutoMerge()
 		while settings.autoMerge do
 			events.Merge:FireServer()
 			wait(0.1)
+		end
+	end)
+end
+
+local obbyCheckpoints = {
+	[1] = ObbyCheckpoints.ObbyCheckpoint1.CFrame,
+	[2] = ObbyCheckpoints.ObbyCheckpoint2.CFrame,
+	[3] = ObbyCheckpoints.ObbyCheckpoint3.CFrame,
+	[4] = ObbyCheckpoints.ObbyCheckpoint4.CFrame,
+	[5] = ObbyCheckpoints.ObbyCheckpoint5.CFrame,
+	[6] = ObbyFinish.CFrame + Vector3.new(0, 20, 0),
+	[7] = returnToPlot.CFrame
+}
+
+function doAutoObby()
+	spawn(function()
+		while settings.autoObby do
+			for i, v in ipairs(obbyCheckpoints) do
+				TeleportTo(v)
+				wait(2)
+			end
+			wait(60)
 		end
 	end)
 end

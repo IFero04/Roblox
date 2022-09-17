@@ -19,7 +19,10 @@ local settings = {
 	autoCollect = false,
 	autoMerge = false,
 	autoDeposit = false,
-	autoObby = false,
+	autoObby = {
+		enabled =false,
+		delaySeconds = 5
+	},
 	autoBuySlime = {
 		enabled = false,
 		amount = 1
@@ -153,11 +156,23 @@ MISC:AddSlider({
 	end
 })
 
+MISC:AddSlider({
+	Name = "Auto Obby Interval",
+	Min = 5,
+	Max = 60,
+	Default = 10,
+	Color = Color3.fromRGB(0, 255, 255),
+	Increment = 5,
+	Callback = function(value)
+		settings.autoObby.delaySeconds = value
+	end
+})
+
 MISC:AddToggle({
 	Name = "Enable Auto Obby",
 	Default = false,
 	Callback = function(bool)
-		settings.autoObby = bool
+		settings.autoObby.enabled = bool
 		if bool then
 			doAutoObby()
 		end
@@ -277,12 +292,12 @@ local obbyCheckpoints = {
 
 function doAutoObby()
 	spawn(function()
-		while settings.autoObby do
+		while settings.autoObby.enabled do
 			for i, v in ipairs(obbyCheckpoints) do
 				TeleportTo(v)
 				wait(2)
 			end
-			wait(60)
+			wait(settings.autoObby.delaySeconds)
 		end
 	end)
 end

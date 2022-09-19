@@ -57,6 +57,24 @@ local Misc = Window:MakeTab({
 	PremiumOnly = false
 })
 
+local CREDITS = Misc:AddSection({
+	Name = "Credits"
+})
+
+CREDITS:AddButton({
+	Name = "COPY DISCORD LINK",
+	Callback = function()
+		setclipboard('https://discord.gg/MeAXMSCc9Q')
+		OrionLib:MakeNotification({
+			Name = "COPIED!",
+			Content = "Discord link copied to your clipboard!",
+			Time = 5
+		})
+  	end
+})
+
+CREDITS:AddLabel("Created by: Beaast#6458")
+
 local UI = Misc:AddSection({
 	Name = "UI Options"
 })

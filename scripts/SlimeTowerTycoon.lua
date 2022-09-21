@@ -20,7 +20,11 @@ local settings = {
 	autoMerge = false,
 	autoDeposit = false,
 	autoObby = {
-		enabled =false,
+		enabled = false,
+		delaySeconds = 5
+	},
+	autoObby2 = {
+		enabled = false,
 		delaySeconds = 5
 	},
 	autoBuySlime = {
@@ -179,6 +183,17 @@ MISC:AddToggle({
 	end
 })
 
+MISC:AddToggle({
+	Name = "Enable Auto Obby (Tween)",
+	Default = false,
+	Callback = function(bool)
+		settings.autoObby2.enabled = bool
+		if bool then
+			doAutoObby2()
+		end
+	end
+})
+
 local CREDITS = Misc:AddSection({
 	Name = "Credits"
 })
@@ -319,6 +334,48 @@ function doAutoObby()
 		end
 	end)
 end
+
+for i, v in pairs(game:GetService("Workspace").DragonBreaths:GetDescendants()) do
+	if v.name == "Killer" then
+		v:Destroy()
+	end
+end
+
+function doAutoObby2()
+	spawn(function()
+		while settings.autoObby2.enabled do
+			function Tween(newCFrame)
+				local tween = game:GetService("TweenService"):Create(game:GetService("Players").LocalPlayer.Character.HumanoidRootPart, TweenInfo.new(2.5), { CFrame = newCFrame })
+				tween:Play()
+				tween.Completed:Wait()
+			end
+
+			local Points = game:GetService("Workspace"):WaitForChild("ObbyCheckpoints")
+			for i = 1, 5 do
+				local str = tostring("ObbyCheckpoint" .. i)
+				Tween(Points[str].CFrame)
+			end
+			Tween(game:GetService("Workspace"):WaitForChild("ObbyButton"):WaitForChild("Button").CFrame)
+		end
+	end)
+end
+
+local ChatFrame = game:GetService("Players").LocalPlayer.PlayerGui:WaitForChild("Chat"):WaitForChild("Frame"):WaitForChild("ChatChannelParentFrame"):WaitForChild("Frame_MessageLogDisplay"):WaitForChild("Scroller")
+local Connection = nil
+spawn(function()
+	Connection = ChatFrame.ChildAdded:Connect(function(child)
+		for i, v in pairs(child:GetChildren()) do
+			if v.ClassName == "TextLabel" and v.Text == "You earned a boost from the Wizard's Tower!" then
+				child:Destroy()
+				for a, b in pairs(ChatFrame:GetChildren()) do
+					if b.ClassName == "Frame" and #b:GetChildren() == 0 then
+						b:Destroy()
+					end
+				end
+			end
+		end
+	end)
+end)
 
 RunService.Stepped:Connect(function()
 	if localPlayer.Character then

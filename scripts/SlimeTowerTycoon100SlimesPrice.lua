@@ -3,7 +3,6 @@ repeat wait() until game:IsLoaded()
 local sharedUtility = require(game:GetService("ReplicatedStorage").Modules.SharedUtility)
 local plot = sharedUtility.GetPlayerTycoon(game:GetService("Players").LocalPlayer)
 local SPlot = tostring(plot)
-local PL = game:GetService("Workspace").Plots[SPlot].Buttons.BuyDropper100.Button.BillboardGui.DropperCost.Text
 
 local size = workspace.CurrentCamera.ViewportSize
 local a = Drawing.new("Text")
@@ -30,6 +29,6 @@ b.Position = Vector2.new((size.X - b.TextBounds.X) - 10, (size.Y - b.TextBounds.
 spawn(function()
 	while true do
 		b.Text = game:GetService("Workspace").Plots[SPlot].Buttons.BuyDropper100.Button.BillboardGui.DropperCost.Text
-		wait(5)
+		wait(0.1)
 	end
 end)

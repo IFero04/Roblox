@@ -3,7 +3,6 @@ local players = game:GetService("Players")
 local localPlayer = players.LocalPlayer
 local remotesPath = game:GetService("ReplicatedStorage").GTycoonClient.Remotes
 local RunService = game:GetService("RunService")
-local ObbyFinish = game:GetService("Workspace").ObbyButton.Button
 local ObbyCheckpoints = game:GetService("Workspace").ObbyCheckpoints
 local returnToPlot = game:GetService("Workspace").ReturnPortals:FindFirstChild("ReturnToPlot").Portal
 
@@ -24,8 +23,7 @@ local settings = {
 		delaySeconds = 5
 	},
 	autoObby2 = {
-		enabled = false,
-		delaySeconds = 5
+		enabled = false
 	},
 	autoBuySlime = {
 		enabled = false,
@@ -313,14 +311,18 @@ function doAutoMerge()
 	end)
 end
 
+local ObbyFinish2 = game:GetService("Workspace").ObbyButton2.Button
 local obbyCheckpoints = {
 	[1] = ObbyCheckpoints.ObbyCheckpoint1.CFrame,
 	[2] = ObbyCheckpoints.ObbyCheckpoint2.CFrame,
 	[3] = ObbyCheckpoints.ObbyCheckpoint3.CFrame,
 	[4] = ObbyCheckpoints.ObbyCheckpoint4.CFrame,
 	[5] = ObbyCheckpoints.ObbyCheckpoint5.CFrame,
-	[6] = ObbyFinish.CFrame + Vector3.new(0, 20, 0),
-	[7] = returnToPlot.CFrame
+	[6] = ObbyCheckpoints.ObbyCheckpoint6.CFrame,
+	[7] = ObbyCheckpoints.ObbyCheckpoint7.CFrame,
+	[8] = ObbyCheckpoints.ObbyCheckpoint8.CFrame,
+	[9] = ObbyFinish2.CFrame + Vector3.new(0, 20, 0),
+	[10] = returnToPlot.CFrame
 }
 
 function doAutoObby()
@@ -335,11 +337,17 @@ function doAutoObby()
 	end)
 end
 
-for i, v in pairs(game:GetService("Workspace").DragonBreaths:GetDescendants()) do
-	if v.name == "Killer" then
+for i, v in pairs(game:GetService("Workspace").Obby.DragonBreaths:GetDescendants()) do
+	if v.Name == "Killer" then
 		v:Destroy()
 	end
 end
+for i, v in pairs(game:GetService("Workspace").SpinningSwords:GetDescendants()) do
+	if v.Name == "Sword" then
+		v:Destroy()
+	end
+end
+game:GetService("Workspace").SwampKillBrick:Destroy()
 
 function doAutoObby2()
 	spawn(function()
@@ -351,7 +359,7 @@ function doAutoObby2()
 			end
 
 			local Points = game:GetService("Workspace"):WaitForChild("ObbyCheckpoints")
-			for i = 1, 5 do
+			for i = 1, 8 do
 				local str = tostring("ObbyCheckpoint" .. i)
 				Tween(Points[str].CFrame)
 			end
@@ -365,11 +373,20 @@ local Connection = nil
 spawn(function()
 	Connection = ChatFrame.ChildAdded:Connect(function(child)
 		for i, v in pairs(child:GetChildren()) do
-			if v.ClassName == "TextLabel" and v.Text == "You earned a boost from the Wizard's Tower!" then
-				child:Destroy()
-				for a, b in pairs(ChatFrame:GetChildren()) do
-					if b.ClassName == "Frame" and #b:GetChildren() == 0 then
-						b:Destroy()
+			if v.ClassName == "TextLabel" then
+				if v.Text == "You completed floor #1 of the Wizard's Tower!" then
+					child:Destroy()
+					for a, b in pairs(ChatFrame:GetChildren()) do
+						if b.ClassName == "Frame" and #b:GetChildren() == 0 then
+							b:Destroy()
+						end
+					end
+				elseif v.Text == "You completed floor #2 of the Wizard's Tower!" then
+					child:Destroy()
+					for a, b in pairs(ChatFrame:GetChildren()) do
+						if b.ClassName == "Frame" and #b:GetChildren() == 0 then
+							b:Destroy()
+						end
 					end
 				end
 			end

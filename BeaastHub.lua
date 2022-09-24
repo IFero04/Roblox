@@ -14,4 +14,7 @@ if placeID == 10675066724 then
 -- // RACE CLICKER \\ --
 elseif placeID == 9285238704 then
 	loadstring(game:HttpGet("https://raw.githubusercontent.com/Beaast-exe/Roblox/master/scripts/RaceClicker.lua"))()
+-- // IDLE HEROES SIMULATOR \\ --
+elseif placeID == 9264596435 then
+	loadstring(game:HttpGet("https://raw.githubusercontent.com/Beaast-exe/Roblox/master/scripts/IdleHeroesSimulator.lua"))()
 end

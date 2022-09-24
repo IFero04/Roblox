@@ -1,9 +1,15 @@
 -- // VARIABLES \\ --
-local virtualUser = game:GetService("VirtualUser")
+local VirtualInputManager = game:GetService("VirtualInputManager")
+local Mouse = game:GetService("Players").LocalPlayer:GetMouse()
 
 -- // FEATURE DEFINING \\ --
 local settings = {
-	autoClick = false
+	autoClick = {
+		enabled = false,
+		x = 0,
+		y = 0,
+		interval = 0.01
+	}
 }
 
 -- // UI SETUP \\ --
@@ -27,15 +33,15 @@ local Autos = Main:AddSection({
 	Name = "Autos"
 })
 
-local Clicker = Autos:AddToggle({
-	Name = "Enable Auto Clicker",
-	Default = false,
-	Flag = "clicker",
-	Callback = function(bool)
-		settings.autoClick = bool
-		if bool then
-			doAutoClick()
-		end
+Autos:AddSlider({
+	Name = "Auto Click Delay",
+	Min = 0.01,
+	Max = 1,
+	Default = 0.01,
+	Increment = 0.01,
+	Color = Color3.fromRGB(0, 255, 255),
+	Callback = function(value)
+		settings.autoClick.interval = value
 	end
 })
 
@@ -44,10 +50,15 @@ Autos:AddBind({
 	Default = Enum.KeyCode.F,
 	Hold = false,
 	Callback = function()
-		if settings.autoClick then
-			Clicker:Set(false)
+		settings.autoClick.x = Mouse.X
+		settings.autoClick.y = Mouse.Y
+
+		if settings.autoClick.enabled then
+			settings.autoClick.enabled = false
+			doAutoClick()
 		else
-			Clicker:Set(true)
+			settings.autoClick.enabled = true
+			doAutoClick()
 		end
 	end
 })
@@ -101,27 +112,13 @@ UI:AddButton({
 })
 
 -- // CHEAT FUNCTIONS \\ --
-
-function doAutoWalk()
-	spawn(function()
-		while settings.autoWalk do
-			wait(0.1)
-			virtualUser:SetKeyDown(119)
-			wait(10)
-			virtualUser:SetKeyUp(119)
-		end
-		virtualUser:SetKeyUp(119)
-	end)
-end
-
 function doAutoClick()
 	spawn(function()
-		while settings.autoClick do
-			virtualUser:Button1Down(Vector2.new(500,0), workspace.CurrentCamera.CFrame)
-			wait(0.01)
-			virtualUser:Button1Up(Vector2.new(500,0), workspace.CurrentCamera.CFrame)
+		while settings.autoClick.enabled do
+			VirtualInputManager:SendMouseButtonEvent(settings.autoClick.x, settings.autoClick.y, 0, true, game, 1)
+			VirtualInputManager:SendMouseButtonEvent(settings.autoClick.x, settings.autoClick.y, 0, false, game, 1)
+			wait(settings.autoClick.interval)
 		end
-		virtualUser:Button1Up(Vector2.new(500,0), workspace.CurrentCamera.CFrame)
 	end)
 end
 

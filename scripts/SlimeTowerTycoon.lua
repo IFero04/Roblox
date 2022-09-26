@@ -1,411 +1,396 @@
--- // VARIABLES \\ --
-local players = game:GetService("Players")
-local localPlayer = players.LocalPlayer
-local remotesPath = game:GetService("ReplicatedStorage").GTycoonClient.Remotes
-local RunService = game:GetService("RunService")
-local ObbyCheckpoints = game:GetService("Workspace").ObbyCheckpoints
-local returnToPlot = game:GetService("Workspace").ReturnPortals:FindFirstChild("ReturnToPlot").Portal
-
-local events = {
-	Merge = remotesPath.MergeDroppers,
-    BuyDropper = remotesPath.BuyDropper,
-    BuyRate = remotesPath.BuySpeed,
-    Deposit = remotesPath.DepositDrops
+-- Variavels --
+local remmotePath = game:GetService("ReplicatedStorage").GTycoonClient.Remotes
+local player = game.Players.LocalPlayer
+local selectedSlime = 1
+local selectedRate = 1 
+local obby = game:GetService("Workspace").ObbyCheckpoints
+local obbyCheckpoints = {
+    [1] = obby.ObbyCheckpoint1.CFrame,
+    [2] = obby.ObbyCheckpoint2.CFrame + Vector3.new(-1, 0, 0),
+    [3] = obby.ObbyCheckpoint3.CFrame,
+    [4] = obby.ObbyCheckpoint4.CFrame,
+    [5] = obby.ObbyCheckpoint5.CFrame,
+    [6] = obby.ObbyCheckpoint6.CFrame,
+    [7] = obby.ObbyCheckpoint7.CFrame,
+    [8] = obby.ObbyCheckpoint8.CFrame + Vector3.new(-3, 5, -2),
+    [9] = game:GetService("Workspace").ObbyButton2.Button.CFrame + Vector3.new(0, 20, 0),
+    [10] = game:GetService("Workspace").ReturnPortals:FindFirstChild("ReturnToPlot").Portal.CFrame
 }
+getgenv().autoDeposit = false
+getgenv().autoMerge = false
+getgenv().autoCollectV1 = false
+getgenv().autoCollectV2 = false
+getgenv().autoBuy = false
+getgenv().autoRate = false
+getgenv().autoObby = false
 
--- // FEATURE DEFINING \\ --
-local settings = {
-	autoCollect = false,
-	autoMerge = false,
-	autoDeposit = false,
-	autoObby = {
-		enabled = false,
-		delaySeconds = 5
-	},
-	autoObby2 = {
-		enabled = false
-	},
-	autoBuySlime = {
-		enabled = false,
-		amount = 1
-	},
-	autoBuyRate = false,
-	walkspeed = 16,
-	jumppower = 50
-}
+-- Teleport CFrame
+function teleportTo(placeCFrame)
+    if player.Character then
+        player.Character.HumanoidRootPart.CFrame = placeCFrame
+    end
+end
 
--- // UI SETUP \\ --
-local OrionLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/shlexware/Orion/main/source"))()
+-- Auto Deposit Droplets
+function doDeposit()
+    spawn(function()
+        while autoDeposit do
+            remmotePath.DepositDrops:FireServer()
+            wait(1)
+        end
+    end)
+end
 
-local Window = OrionLib:MakeWindow({
-	Name = "Beaast Hub",
-	HidePremium = false,
-	SaveConfig = false,
-	IntroEnabled = false,
-	IntroText = "Beaast Hub"
-})
+-- Auto Merge Slimes
+function doMergeSlime()
+    spawn(function()
+        while autoMerge do
+            remmotePath.MergeDroppers:FireServer()
+            wait(1)
+        end
+    end)
+end
 
-local Main = Window:MakeTab({
-	Name = "Main",
+-- Auto Collect V1
+function doCollectV1()
+    spawn(function()
+        while autoCollectV1 do
+            for i, orb in pairs(game.Workspace.Drops:GetChildren()) do
+                if orb.Name == "Dropper_Drop" then
+                    orb.CFrame = player.Character.HumanoidRootPart.CFrame
+                end
+            end
+            wait()
+        end
+    end)
+end
+
+-- Auto Collect V2
+function doCollectV2()
+    spawn(function()
+        while autoCollectV2 do
+            local orbs = game:GetService("Workspace").Drops:GetChildren()
+            for i, orb in pairs(orbs) do
+                if orb.Name == "Dropper_Drop" then
+                    orb.CFrame = CFrame.new(orb.Position) + Vector3.new(0, 1.25, 0)
+                    teleportTo(orb.CFrame)
+                    wait()
+                end
+                orbs = game:GetService("Workspace").Drops:GetChildren()
+            end
+            wait()
+        end
+    end)
+end
+
+-- Auto Buy Slimes
+function doBuySlime(SlimeAmmont)
+    spawn(function()
+        while autoBuy do
+            remmotePath.BuyDropper:FireServer(SlimeAmmont)
+            wait(1)
+        end
+    end)
+end
+
+-- Buy Speed Rate
+function BuySpeedRate(RateAmmont)
+    spawn(function()
+        while RateAmmont ~= 0 do
+            remmotePath.BuySpeed:FireServer(1)
+            RateAmmont = RateAmmont - 1
+            wait()
+        end
+    end)
+end
+function doBuyRate()
+    spawn(function()
+        while autoRate do
+            remmotePath.BuySpeed:FireServer(1)
+            wait(1)
+        end
+    end)
+end
+
+--Auto Event
+function doAutoObby()
+    spawn(function() 
+        while autoObby do
+           for i, checkPoint in pairs(obbyCheckpoints) do
+                if player.Character then
+                    wait()
+                    teleportTo(checkPoint)
+                    wait(2)
+                end
+           end
+           wait(3)
+        end
+    end)
+end
+
+-- HUDE
+local FeroScript = loadstring(game:HttpGet(('https://raw.githubusercontent.com/shlexware/Orion/main/source')))()
+local Window = FeroScript:MakeWindow({Name = "Fero HUB - Slime Tower Tycoon", HidePremium = false, SaveConfig = true, ConfigFolder = "FeroHUB"})
+
+-- 1
+local TabFarm = Window:MakeTab({
+	Name = "Farming",
 	Icon = "rbxassetid://4483345998",
 	PremiumOnly = false
 })
-
-local Autos = Main:AddSection({
-	Name = "Autos"
+local Farm = TabFarm:AddSection({
+    Name = "Auto Farm"
 })
 
-Autos:AddToggle({
-	Name = "Enable Auto Collect",
+Farm:AddToggle({
+    Name = "Auto Collect V1",
+    Default = true,
+    Save = true,
+    Flag = "ACV1",
+    Callback = function(value)
+        autoCollectV1 = value
+        print("Auto Collect V1 is: ",value)
+        if value then
+            doCollectV1()
+        end
+    end
+})
+
+Farm:AddToggle({
+    Name = "Auto Collect V2",
+    Default = false,
+    Save = true,
+    Flag = "ACV2",
+    Callback = function(value)
+        autoCollectV2 = value
+        print("Auto Collect V2 is: ",value)
+        if value then
+            doCollectV2()
+        end
+    end
+})
+
+Farm:AddToggle({
+    Name = "Auto Deposit",
+    Default = true,
+    Save = true,
+    Flag = "AD",
+    Callback = function(value)
+        autoDeposit = value
+        print("Auto Deposit is: ",value)
+        if value then
+            doDeposit()
+        end
+    end
+})
+
+Farm:AddToggle({
+    Name = "Auto Merge",
+    Default = false,
+    Save = true,
+    Flag = "AM",
+    Callback = function(value)
+        autoMerge = value
+        print("Auto Merge is: ",value)
+        if value then
+            doMergeSlime()
+        end
+    end
+})
+
+local Event = TabFarm:AddSection({
+    Name = "Auto Event"
+})
+
+Event:AddToggle({
+    Name = "Auto Obby",
+    Default = false,
+    Save = true,
+    Flag = "AO",
+    Callback = function(value)
+        autoObby = value
+        print("Auto Obby is: ",value)
+        if value then
+           doAutoObby()
+        end
+    end
+})
+
+-- 2
+local TabBuy = Window:MakeTab({
+	Name = "Buying",
+	Icon = "rbxassetid://4483345998",
+	PremiumOnly = false
+})
+local BuyS = TabBuy:AddSection({
+    Name = "Buy Slimes"
+})
+
+BuyS:AddTextbox({
+	Name = "Slime Ammont",
+	Default = "1",
+	TextDisappear = false,
+    Save = true,
+    Flag = "SA",
+	Callback = function(value)
+        tonumber(value)
+        if value then
+            print("Slime Ammont is: ",value)
+            selectedSlime = value
+        end
+		if autoBuy then
+            autoBuy = false
+            wait(2)
+            autoBuy = true
+            doBuySlime(selectedSlime)
+        end
+	end	  
+})
+BuyS:AddToggle({
+	Name = "Auto Buy Slime",
 	Default = false,
-	Callback = function(bool)
-		settings.autoCollect = bool
-		if bool then
-			doAutoCollect()
-		end
-	end
+    Save = true,
+    Flag = "ABS",
+	Callback = function(value)
+        autoBuy = value
+		print("Auto Buy Slime is: ",value)
+        if value and selectedSlime then
+            doBuySlime(selectedSlime)
+        end
+	end    
 })
 
-Autos:AddToggle({
-	Name = "Enable Auto Deposit",
+local BuyR = TabBuy:AddSection({
+    Name = "Buy Cauldron Speed"
+})
+
+BuyR:AddSlider({
+	Name = "Cauldron Rate Ammont",
+	Min = 1,
+	Max = 20,
+	Default = 5,
+	Color = Color3.fromRGB(224, 176, 255),
+	Increment = 1,
+    Save = true,
+    Flag = "CRA",
+	Callback = function(value)
+		selectedRate = value
+	end    
+})
+BuyR:AddButton({
+	Name = "Buy Cauldron Speed",
+    Save = true,
+    Flag = "BCS",
+	Callback = function()
+      	if selectedRate then
+            BuySpeedRate(selectedRate)
+        end
+  	end    
+})
+
+BuyR:AddToggle({
+	Name = "Auto Buy Cauldron Speed",
 	Default = false,
-	Callback = function(bool)
-		settings.autoDeposit = bool
-		if bool then
-			doAutoDeposit()
-		end
-	end
+    Save = true,
+    Flag = "ABCS",
+	Callback = function(value)
+        autoRate = value
+		print("Auto Buy Speed Rate is: ",value)
+        if value then
+            doBuyRate()
+        end
+	end    
 })
 
-Autos:AddToggle({
-	Name = "Enable Auto Merge",
-	Default = false,
-	Callback = function(bool)
-		settings.autoMerge = bool
-		if bool then
-			doAutoMerge()
-		end
-	end
-})
-
-local Buy = Main:AddSection({
-	Name = 'Buy'
-})
-
-Buy:AddDropdown({
-	Name = "Buy Slime Amount",
-	Default = "100",
-	Options = {"1", "5", "25", "50", "100"},
-	Callback = function(amount)
-		settings.autoBuySlime.amount = amount
-	end
-})
-
-Buy:AddToggle({
-	Name = "Auto Buy Slimes",
-	Default = false,
-	Callback = function(bool)
-		settings.autoBuySlime.enabled = bool
-		if bool then
-			doAutoBuySlime(settings.autoBuySlime.amount)
-		end
-	end
-})
-
-Buy:AddToggle({
-	Name = "Auto Buy Rate",
-	Default = false,
-	Callback = function(bool)
-		settings.autoBuyRate = bool
-		if bool then
-			doAutoBuyRate()
-		end
-	end
-})
-
--- // MISC TAB \\ --
-local Misc = Window:MakeTab({
+-- 3
+local TabMisc = Window:MakeTab({
 	Name = "Misc",
 	Icon = "rbxassetid://4483345998",
 	PremiumOnly = false
 })
-
-local MISC = Misc:AddSection({
-	Name = "Misc Options"
+local Misc = TabMisc:AddSection({
+    Name = "Misc Options"
 })
 
-MISC:AddSlider({
+Misc:AddSlider({
 	Name = "Walk Speed",
 	Min = 16,
 	Max = 200,
-	Default = 16,
-	Color = Color3.fromRGB(0, 255, 255),
+	Default = 25,
+	Color = Color3.fromRGB(224, 176, 255),
 	Increment = 1,
+    Save = true,
+    Flag = "WS",
 	Callback = function(value)
-		settings.walkspeed = value
-	end
+		game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = value
+	end    
 })
 
-MISC:AddSlider({
+Misc:AddSlider({
 	Name = "Jump Power",
 	Min = 50,
 	Max = 200,
 	Default = 50,
-	Color = Color3.fromRGB(0, 255, 255),
+	Color = Color3.fromRGB(224, 176, 255),
 	Increment = 1,
+    Save = true,
+    Flag = "JP",
 	Callback = function(value)
-		settings.jumppower = value
-	end
+		game.Players.LocalPlayer.Character.Humanoid.JumpPower = value
+        game.Players.LocalPlayer.Character.Humanoid.UseJumpPower = true
+	end    
 })
 
-MISC:AddSlider({
-	Name = "Auto Obby Interval",
-	Min = 5,
-	Max = 60,
-	Default = 10,
-	Color = Color3.fromRGB(0, 255, 255),
-	Increment = 5,
-	Callback = function(value)
-		settings.autoObby.delaySeconds = value
-	end
-})
-
-MISC:AddToggle({
-	Name = "Enable Auto Obby",
-	Default = false,
-	Callback = function(bool)
-		settings.autoObby.enabled = bool
-		if bool then
-			doAutoObby()
-		end
-	end
-})
-
-MISC:AddToggle({
-	Name = "Enable Auto Obby (Tween)",
-	Default = false,
-	Callback = function(bool)
-		settings.autoObby2.enabled = bool
-		if bool then
-			doAutoObby2()
-		end
-	end
-})
-
-local CREDITS = Misc:AddSection({
-	Name = "Credits"
-})
-
-CREDITS:AddButton({
-	Name = "COPY DISCORD LINK",
+Misc:AddButton({
+	Name = "Anti-AFK",
 	Callback = function()
-		setclipboard('https://discord.gg/MeAXMSCc9Q')
-		OrionLib:MakeNotification({
-			Name = "COPIED!",
-			Content = "Discord link copied to your clipboard!",
-			Time = 5
-		})
-  	end
+        local vu = game:GetService("VirtualUser")
+        game:GetService("Players").LocalPlayer.Idled:connect(function()
+            vu:Button2Down(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
+            wait(1)
+            vu:Button2Up(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
+        end)
+        FeroScript:MakeNotification({
+            Name = "Anti-AFK",
+            Content = "Anti-AFK ON, you wont be disconnected until you close the game",
+            Image = "rbxassetid://4483345998",
+            Time = 10
+        })
+  	end    
 })
 
-CREDITS:AddLabel("Created by: Beaast#6458")
-
-local UI = Misc:AddSection({
-	Name = "UI Options"
+local UI = TabMisc:AddSection({
+    Name = "UI Options"
 })
 
 UI:AddBind({
-	Name = "Toggle UI",
-	Default = Enum.KeyCode.RightControl,
-	Hold = false,
-	Callback = function()
-		local UI = game:GetService("CoreGui"):FindFirstChild("Orion")
+    Name = "Toggle UI",
+    Default = Enum.KeyCode.LeftControl,
+    Hold = false,
+    Save = true,
+    Flag = "TUI",
+    Callback = function()
+        local UI = game:GetService("CoreGui"):FindFirstChild("Orion")
 		if UI then
 			UI.Enabled = not UI.Enabled
 		end
-	end
+    end
 })
 
 UI:AddButton({
 	Name = "Destroy UI",
 	Callback = function()
-		OrionLib:Destroy()
-  	end
+        autoDeposit = false
+        autoMerge = false
+        autoCollectV1 = false
+        autoCollectV2 = false
+        autoBuy = false
+        autoRate = false
+        autoObby = false
+        game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = 16
+        FeroScript:Destroy()
+  	end    
 })
 
--- // CHEAT FUNCTIONS \\ --
-
-function TeleportToMe(item)
-	if localPlayer.Character then
-		local hrp = localPlayer.Character.HumanoidRootPart
-		item.CFrame = hrp.CFrame
-	end
-end
-
-function TeleportTo(cframe)
-	if localPlayer.Character then
-		local hrp = localPlayer.Character.HumanoidRootPart
-		hrp.CFrame = cframe
-	end
-end
-
-function doAutoCollect()
-	for i, v in ipairs(game:GetService("Workspace").Drops:GetChildren()) do
-		if v:IsA("Part") and v.Name == "Dropper_Drop" then
-			TeleportToMe(v)
-		end
-	end
-
-	local added
-	added = game:GetService("Workspace").Drops.ChildAdded:Connect(function(v)
-		wait(0.2)
-		if v:IsA("Part") and v.Name == "Dropper_Drop" then
-			TeleportToMe(v)
-		end
-	end)
-
-	spawn(function()
-		while task.wait(0.1) do
-			if settings.autoCollect ~= true then
-				added:Disconnect()
-				break;
-			end
-		end
-	end)
-end
-
-function doAutoDeposit()
-	spawn(function()
-		while settings.autoDeposit do
-			events.Deposit:FireServer()
-			wait(0.1)
-		end
-	end)
-end
-
-function doAutoBuySlime(value)
-	spawn(function()
-		while settings.autoBuySlime.enabled do
-			local amount = value or settings.autoBuySlime.amount
-			events.BuyDropper:FireServer(tonumber(amount))
-			wait(0.1)
-		end
-	end)
-end
-
-function doAutoBuyRate()
-	spawn(function()
-		while settings.autoBuyRate do
-			events.BuyRate:FireServer(1)
-			wait(0.1)
-		end
-	end)
-end
-
-function doAutoMerge()
-	spawn(function()
-		while settings.autoMerge do
-			events.Merge:FireServer()
-			wait(0.1)
-		end
-	end)
-end
-
-local ObbyFinish2 = game:GetService("Workspace").ObbyButton2.Button
-local obbyCheckpoints = {
-	[1] = ObbyCheckpoints.ObbyCheckpoint1.CFrame,
-	[2] = ObbyCheckpoints.ObbyCheckpoint2.CFrame,
-	[3] = ObbyCheckpoints.ObbyCheckpoint3.CFrame,
-	[4] = ObbyCheckpoints.ObbyCheckpoint4.CFrame,
-	[5] = ObbyCheckpoints.ObbyCheckpoint5.CFrame,
-	[6] = ObbyCheckpoints.ObbyCheckpoint6.CFrame,
-	[7] = ObbyCheckpoints.ObbyCheckpoint7.CFrame,
-	[8] = ObbyCheckpoints.ObbyCheckpoint8.CFrame,
-	[9] = ObbyFinish2.CFrame + Vector3.new(0, 20, 0),
-	[10] = returnToPlot.CFrame
-}
-
-function doAutoObby()
-	spawn(function()
-		while settings.autoObby.enabled do
-			for i, v in ipairs(obbyCheckpoints) do
-				TeleportTo(v)
-				wait(2)
-			end
-			wait(settings.autoObby.delaySeconds)
-		end
-	end)
-end
-
-for i, v in pairs(game:GetService("Workspace").Obby.DragonBreaths:GetDescendants()) do
-	if v.Name == "Killer" then
-		v:Destroy()
-	end
-end
-for i, v in pairs(game:GetService("Workspace").SpinningSwords:GetDescendants()) do
-	if v.Name == "Sword" then
-		v:Destroy()
-	end
-end
-game:GetService("Workspace").SwampKillBrick:Destroy()
-
-function doAutoObby2()
-	spawn(function()
-		while settings.autoObby2.enabled do
-			function Tween(newCFrame)
-				local tween = game:GetService("TweenService"):Create(game:GetService("Players").LocalPlayer.Character.HumanoidRootPart, TweenInfo.new(2.5), { CFrame = newCFrame })
-				tween:Play()
-				tween.Completed:Wait()
-			end
-
-			local Points = game:GetService("Workspace"):WaitForChild("ObbyCheckpoints")
-			for i = 1, 8 do
-				local str = tostring("ObbyCheckpoint" .. i)
-				Tween(Points[str].CFrame)
-			end
-			Tween(game:GetService("Workspace"):WaitForChild("ObbyButton"):WaitForChild("Button").CFrame)
-		end
-	end)
-end
-
-local ChatFrame = game:GetService("Players").LocalPlayer.PlayerGui:WaitForChild("Chat"):WaitForChild("Frame"):WaitForChild("ChatChannelParentFrame"):WaitForChild("Frame_MessageLogDisplay"):WaitForChild("Scroller")
-local Connection = nil
-spawn(function()
-	Connection = ChatFrame.ChildAdded:Connect(function(child)
-		for i, v in pairs(child:GetChildren()) do
-			if v.ClassName == "TextLabel" then
-				if v.Text == "You completed floor #1 of the Wizard's Tower!" then
-					child:Destroy()
-					for a, b in pairs(ChatFrame:GetChildren()) do
-						if b.ClassName == "Frame" and #b:GetChildren() == 0 then
-							b:Destroy()
-						end
-					end
-				elseif v.Text == "You completed floor #2 of the Wizard's Tower!" then
-					child:Destroy()
-					for a, b in pairs(ChatFrame:GetChildren()) do
-						if b.ClassName == "Frame" and #b:GetChildren() == 0 then
-							b:Destroy()
-						end
-					end
-				end
-			end
-		end
-	end)
-end)
-
-RunService.Stepped:Connect(function()
-	if localPlayer.Character then
-		local Humanoid = localPlayer.Character:FindFirstChild("Humanoid")
-		if Humanoid then
-			Humanoid.WalkSpeed = tonumber(settings.walkspeed)
-			Humanoid.JumpPower = tonumber(settings.jumppower)
-			if Humanoid.UseJumpPower ~= true then
-				Humanoid.UseJumpPower = true
-			end
-		end
-	end
-end)
-
--- // INITIALIZE THE SCRIPT \\ --
-OrionLib:Init()
+-- 0
+FeroScript:Init()
